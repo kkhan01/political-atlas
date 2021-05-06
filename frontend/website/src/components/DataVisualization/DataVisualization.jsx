@@ -7,6 +7,7 @@ import NativeSelect from "@material-ui/core/NativeSelect";
 import BarChart from "./BarChart";
 import PieChart from "./PieChart";
 import TreeMap from "./TreeMap";
+import DoubleBarChart from "./DoubleBarChart";
 
 const useStyles = makeStyles((theme) => ({
   formControl: {
@@ -26,11 +27,12 @@ const Visualization = ({ type, ...props }) =>
     "Bar Chart": <BarChart {...props} />,
     "Pie Chart": <PieChart {...props} />,
     "Tree Map": <TreeMap {...props} />,
+    "Double Bar Chart": <DoubleBarChart {...props} />,
   }[type]);
 
 const DataVisualization = ({ ibm, da }) => {
   const classes = useStyles();
-  const charts = ["Bar Chart", "Pie Chart", "Tree Map"];
+  const charts = ["Bar Chart", "Pie Chart", "Tree Map", "Double Bar Chart"];
 
   const [vizType, setVizType] = useState(charts[0]);
 
