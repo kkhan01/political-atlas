@@ -24,18 +24,12 @@ const DoubleBarChart = ({ dataIBM, dataDA, title = "Double Bar Chart" }) => {
     const barData = [
       {
         "API": "IBM",
-        "values":
-          {
-            "data": dataIBM,
-          },
+        "values": dataIBM
       },
       {
         "API": "DA",
-        "values": 
-          {
-            "data": dataDA,
-          },
-      }
+        "values": dataDA
+      },
     ]
 
     let APIs = barData.map(function (d) { return d.API; });
