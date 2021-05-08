@@ -7,19 +7,39 @@ import "./DoubleBarChart.css";
 import { sortedEmotions } from "src/utils/emotions";
 import { roundUpX, roundDecimal2 } from "src/utils/utils";
 
-const DoubleBarChart = ({ data, title = "Double Bar Chart" }) => {
+const DoubleBarChart = ({ dataIBM, dataDA, title = "Double Bar Chart" }) => {
   const ref = useRef();
   // HACK: makes hover work on chart, isn't really proper in react nor html
   const chartDivRef = useRef();
-  console.log(data)
+
   useEffect(() => {
     // TODO: move this outside and hook it into the screen size
     const margin = { top: 20, right: 20, bottom: 60, left: 40 };
     const width = 600 - margin.left - margin.right;
     const height = 300 - margin.top - margin.bottom;
 
-    const max = d3.max(data, ({ value }) => value);
-    const sum = d3.sum(data, ({ value }) => value);
+    const max = d3.max(dataDA, ({ value }) => value);
+    const sum = d3.sum(dataDA, ({ value }) => value);
+
+    const barData = [
+      {
+        "API": "IBM",
+        "values":
+          {
+            "data": dataIBM,
+          },
+      },
+      {
+        "API": "DA",
+        "values": 
+          {
+            "data": dataDA,
+          },
+      }
+    ]
+
+    let APIs = barData.map(function (d) { return d.API; });
+    console.log(APIs)
 
     // HACK: makes hover work on chart, isn't really proper in react nor html
     const div = d3.select(chartDivRef.current);
@@ -63,6 +83,13 @@ const DoubleBarChart = ({ data, title = "Double Bar Chart" }) => {
       .domain([0, roundUpX(max, yPadding)])
       .range([height, 0]);
 
+
+    // Another scale for subgroup position?
+    var xSubgroup = d3.scaleBand()
+      .domain(APIs)
+      .range([0, x.bandwidth()])
+      .padding([0.05])
+
     // make axes into scales that can be plotted
     const xAxis = d3.axisBottom().scale(x);
     const yAxis = d3.axisLeft().scale(y);
@@ -96,12 +123,12 @@ const DoubleBarChart = ({ data, title = "Double Bar Chart" }) => {
     // make bar chart based on values
     svgElement
       .selectAll("bar")
-      .data(data)
+      .data(dataIBM)
       .enter()
       .append("rect")
       .style("fill", "steelblue")
       .attr("x", ({ emotion }) => x(emotion))
-      .attr("width", x.bandwidth())
+      .attr("width", xSubgroup.bandwidth())
       .attr("y", ({ value }) => y(value))
       .attr("height", ({ value }) => height - y(value))
       .attr(
@@ -130,7 +157,7 @@ const DoubleBarChart = ({ data, title = "Double Bar Chart" }) => {
       });
 
 
-  }, [data, title]);
+  }, [dataIBM, dataDA, title]);
   return (
     <>
       <div ref={chartDivRef} />

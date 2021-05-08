@@ -44,7 +44,7 @@ const Index = ({ ibm, da }) => {
 
   return (
     <>
-      {dataIBM != null && <DoubleBarChart data={dataIBM.concat(dataDA)} title="IBM & DeepAffects" />}
+      {dataIBM != null && <DoubleBarChart dataIBM={dataIBM} dataDA={dataDA} title="IBM & DeepAffects" />}
     </>
   );
 };
