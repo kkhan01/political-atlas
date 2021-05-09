@@ -18,8 +18,12 @@ const DoubleBarChart = ({ dataIBM, dataDA, title = "Double Bar Chart" }) => {
     const width = 600 - margin.left - margin.right;
     const height = 300 - margin.top - margin.bottom;
 
-    const max = d3.max(dataDA, ({ value }) => value);
-    const sum = d3.sum(dataDA, ({ value }) => value);
+    const max = Math.max(
+      d3.max(dataDA, ({ value }) => value), 
+      d3.max(dataIBM, ({ value }) => value)
+    )
+    const da_sum = d3.sum(dataDA, ({ value }) => value);
+    const ibm_sum = d3.sum(dataIBM, ({ value }) => value);
 
     const barData = [
       {
@@ -33,9 +37,6 @@ const DoubleBarChart = ({ dataIBM, dataDA, title = "Double Bar Chart" }) => {
     ]
 
     let APIs = barData.map(function (d) { return d.API; });
-    // console.log(dataDA);
-    // console.log(dataIBM);
-    // console.log([...dataDA, ...dataIBM])
 
     // HACK: makes hover work on chart, isn't really proper in react nor html
     const div = d3.select(chartDivRef.current);
@@ -74,11 +75,11 @@ const DoubleBarChart = ({ dataIBM, dataDA, title = "Double Bar Chart" }) => {
       const ticks = d3.scaleLinear().domain([0, max]).ticks();
       return ticks.length > 0 ? ticks[1] : 0;
     })();
+
     const y = d3
       .scaleLinear()
       .domain([0, roundUpX(max, yPadding)])
       .range([height, 0]);
-
 
     // Another scale for subgroup position?
     var xSubgroup = d3.scaleBand()
@@ -123,25 +124,23 @@ const DoubleBarChart = ({ dataIBM, dataDA, title = "Double Bar Chart" }) => {
       .enter()
       .append("rect")
       .style("fill", "steelblue")
-      .attr("x", ({ emotion }) => {
-        console.log(emotion);
-        return x(emotion);
-      })
+      .attr("x", ({ emotion }) => x(emotion))
       .attr("width", xSubgroup.bandwidth())
       .attr("y", ({ value }) => y(value))
       .attr("height", ({ value }) => height - y(value))
       .attr(
         "transform",
-        `translate(${margin.left + 42}, ${margin.bottom - margin.top})`
+        `translate(${margin.left + 45}, ${margin.bottom - margin.top})`
       )
       // HACK: this is all a bad hack, we need to refactor this later
       .on("mouseover", (event, { emotion, value }) => {
         div.transition().duration(200).style("opacity", 0.9);
         div
           .html(
-            `<b>Emotion:</b> ${emotion}` +
+            `<b>API:</b> IBM` +
+            `<br><b>Emotion:</b> ${emotion}` +
             `<br><b>Occurences:</b> ${value}` +
-            `<br><b>Percentage:</b> ${roundDecimal2((value / sum) * 100)}%`
+            `<br><b>Percentage:</b> ${roundDecimal2((value / ibm_sum) * 100)}%`
           )
           .style("left", event.pageX + 30 + "px")
           .style("top", event.pageY - 30 + "px");
@@ -153,7 +152,7 @@ const DoubleBarChart = ({ dataIBM, dataDA, title = "Double Bar Chart" }) => {
       })
       .on("mouseout", (d) => {
         div.transition().duration(500).style("opacity", 0);
-      });
+      })
     
     svgElement
       .selectAll("bar")
@@ -161,10 +160,7 @@ const DoubleBarChart = ({ dataIBM, dataDA, title = "Double Bar Chart" }) => {
       .enter()
       .append("rect")
       .style("fill", "green")
-      .attr("x", ({ emotion }) => {
-        console.log(emotion);
-        return x(emotion);
-      })
+      .attr("x", ({ emotion }) => x(emotion))
       .attr("width", xSubgroup.bandwidth())
       .attr("y", ({ value }) => y(value))
       .attr("height", ({ value }) => height - y(value))
@@ -177,9 +173,10 @@ const DoubleBarChart = ({ dataIBM, dataDA, title = "Double Bar Chart" }) => {
         div.transition().duration(200).style("opacity", 0.9);
         div
           .html(
-            `<b>Emotion:</b> ${emotion}` +
+            `<b>API:</b> DA` +
+            `<br><b>Emotion:</b> ${emotion}` +
             `<br><b>Occurences:</b> ${value}` +
-            `<br><b>Percentage:</b> ${roundDecimal2((value / sum) * 100)}%`
+            `<br><b>Percentage:</b> ${roundDecimal2((value / da_sum) * 100)}%`
           )
           .style("left", event.pageX + 30 + "px")
           .style("top", event.pageY - 30 + "px");
@@ -191,7 +188,7 @@ const DoubleBarChart = ({ dataIBM, dataDA, title = "Double Bar Chart" }) => {
       })
       .on("mouseout", (d) => {
         div.transition().duration(500).style("opacity", 0);
-      });
+      })
 
   }, [dataIBM, dataDA, title]);
   return (
