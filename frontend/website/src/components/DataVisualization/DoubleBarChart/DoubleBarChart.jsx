@@ -33,7 +33,9 @@ const DoubleBarChart = ({ dataIBM, dataDA, title = "Double Bar Chart" }) => {
     ]
 
     let APIs = barData.map(function (d) { return d.API; });
-    console.log(APIs)
+    // console.log(dataDA);
+    // console.log(dataIBM);
+    // console.log([...dataDA, ...dataIBM])
 
     // HACK: makes hover work on chart, isn't really proper in react nor html
     const div = d3.select(chartDivRef.current);
@@ -121,7 +123,48 @@ const DoubleBarChart = ({ dataIBM, dataDA, title = "Double Bar Chart" }) => {
       .enter()
       .append("rect")
       .style("fill", "steelblue")
-      .attr("x", ({ emotion }) => x(emotion))
+      .attr("x", ({ emotion }) => {
+        console.log(emotion);
+        return x(emotion);
+      })
+      .attr("width", xSubgroup.bandwidth())
+      .attr("y", ({ value }) => y(value))
+      .attr("height", ({ value }) => height - y(value))
+      .attr(
+        "transform",
+        `translate(${margin.left + 42}, ${margin.bottom - margin.top})`
+      )
+      // HACK: this is all a bad hack, we need to refactor this later
+      .on("mouseover", (event, { emotion, value }) => {
+        div.transition().duration(200).style("opacity", 0.9);
+        div
+          .html(
+            `<b>Emotion:</b> ${emotion}` +
+            `<br><b>Occurences:</b> ${value}` +
+            `<br><b>Percentage:</b> ${roundDecimal2((value / sum) * 100)}%`
+          )
+          .style("left", event.pageX + 30 + "px")
+          .style("top", event.pageY - 30 + "px");
+      })
+      .on("mousemove", (event) => {
+        div
+          .style("left", event.pageX + 30 + "px")
+          .style("top", event.pageY - 30 + "px");
+      })
+      .on("mouseout", (d) => {
+        div.transition().duration(500).style("opacity", 0);
+      });
+    
+    svgElement
+      .selectAll("bar")
+      .data(dataDA)
+      .enter()
+      .append("rect")
+      .style("fill", "green")
+      .attr("x", ({ emotion }) => {
+        console.log(emotion);
+        return x(emotion);
+      })
       .attr("width", xSubgroup.bandwidth())
       .attr("y", ({ value }) => y(value))
       .attr("height", ({ value }) => height - y(value))
@@ -149,7 +192,6 @@ const DoubleBarChart = ({ dataIBM, dataDA, title = "Double Bar Chart" }) => {
       .on("mouseout", (d) => {
         div.transition().duration(500).style("opacity", 0);
       });
-
 
   }, [dataIBM, dataDA, title]);
   return (
